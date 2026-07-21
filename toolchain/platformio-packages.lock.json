@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "note": "Internal PlatformIO packages used by target `cyd`. Filled with resolved exact versions during SPEC 01 Step 5 after a controlled resolution in an isolated PLATFORMIO_CORE_DIR.",
+  "platformio_core_dir_id": null,
+  "packages": []
+}

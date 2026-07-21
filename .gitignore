@@ -1,0 +1,32 @@
+# OS junk
+.DS_Store
+.Rhistory
+
+# Pinned toolchain (created by scripts/bootstrap-tools.sh)
+.venv-tools/
+.tools/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Backups and sensitive temporaries (never versioned)
+backups/
+*.backup
+*.bak
+*.swp
+tmp/
+
+# Local environment and secret-bearing files
+.env
+*.env
+!*.env.example
+*.local
+*.local.*
+
+# Local reports and build artifacts
+reports/
+*.log

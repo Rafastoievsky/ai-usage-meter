@@ -1,0 +1,5 @@
+# Pinned bootstrap tool artifacts — macOS arm64 only (SPEC 01).
+# Format: <sha256>  <artifact-file>  <source-url>
+# Any artifact whose hash does not match exactly MUST be rejected.
+61c04acc52a33ef0f331e494bdfbedcdb6c26c6970c022ed3699e5860f8930e3  uv-aarch64-apple-darwin.tar.gz  https://github.com/astral-sh/uv/releases/download/0.11.29/uv-aarch64-apple-darwin.tar.gz
+b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5  gitleaks_8.30.1_darwin_arm64.tar.gz  https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_darwin_arm64.tar.gz
