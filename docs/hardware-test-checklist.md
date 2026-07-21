@@ -33,12 +33,13 @@ Todo registro contiene: `attempt_id`, `phase`, `recorded_at` (UTC RFC 3339),
 | --- | --- |
 | `DeviceIdentityRecord` | `DONE` — CYD identificado (intento `2026-07-21T21:10:57Z`) |
 | `BackupRecord` | `DONE` — backup 4 MiB verificado (intento `2026-07-21T21:10:57Z`) |
-| Checklist funcional | `PENDING` — requiere flashing (paso 8) y pruebas (paso 9) |
+| Flashing (paso 8) | `DONE` — borrado + 5 regiones verificadas (intento `2026-07-21T22:04:18Z`) |
+| Checklist funcional (paso 9) | `PENDING` — pruebas manuales con umbrales |
 
 Sin CYD verificable la Fase B queda `BLOCKED` y SPEC 01 no puede pasar a
-`Implemented-Verified`. El paso 8 (`erase_flash`, escritura, reflasheo) y el
-paso 9 (checklist funcional) permanecen pendientes; en la sesión del paso 7
-solo se autorizaron operaciones de solo lectura (identificación y backup).
+`Implemented-Verified`. El paso 8 (`erase_flash`, escritura, reflasheo) se
+completó y verificó. El paso 9 (checklist funcional con umbrales observables)
+permanece pendiente.
 
 ### Registro de intento — Fase B (paso 7)
 
@@ -136,6 +137,72 @@ Nota operativa: existe en disco un backup previo fuera de Git con el mismo
 SHA-256 (`cyd-prebaseline-20260721T200341Z-32f1e4a090ce.bin`), creado fuera de
 banda antes de este registro. No se versiona, no se sobrescribió y queda sujeto
 a la misma política de retención.
+
+### Registro de intento — Fase B (paso 8, borrado + flashing + verificación)
+
+Se añade al historial; no sobrescribe intentos anteriores.
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | `spec-01-phase-b-2026-07-21T22:04:18Z` |
+| `phase` | `phase-b` |
+| `recorded_at` | `2026-07-21T22:04:18Z` |
+| `responsible` | Rafastoievsky |
+| `coordinator_commit` | `b32542da8495f34f1b3f2d36b4d08311c7f13ba9` |
+| `firmware_commit` | `1594f42ca7573e47ead079d659c1b2c90d8c73ae` (worktree con `platformio.ini` fijado de SPEC 01; el gitlink `1f29bf3` se sincroniza en el paso 10) |
+| `result` | `PASS` |
+| `notes` | Autorización explícita de escritura otorgada. Identidad revalidada antes y después del `erase_flash`. Borrado completo, flasheo de las 5 regiones por el puerto autorizado a 115200, verificación de escritura por hash on-chip y `verify_flash` de readback independiente en las 5 regiones. Arranque confirmado (`=== SmallTV v1.1.4-clawd-meter ===`, un solo boot, sin loop) y LittleFS montado. No se restauró la imagen cruda. El checklist funcional completo (paso 9) permanece `PENDING`. |
+
+#### Orden de operaciones (evidencia)
+
+Identidad → backup (paso 7) → escaneo/validación → sin revocación necesaria →
+`erase_flash` → revalidación de identidad → firmware → LittleFS → reinicio →
+baseline. El backup del paso 7 precede a toda escritura.
+
+#### `HardwareTestRecord` — flashing (paso 8)
+
+| id | Procedimiento | Resultado observado | status |
+| --- | --- | --- | --- |
+| HW-ID-002 | Revalidar identidad antes de `erase` | `ESP32-D0WD-V3 rev v3.1`, MAC hash `32f1e4a090ce`, coincide | `PASS` |
+| HW-ERASE-001 | `esptool 4.11.0 --port /dev/cu.usbserial-1120 erase_flash` | Chip erase completado en 5.7 s; exit `0` | `PASS` |
+| HW-ID-003 | Revalidar identidad tras `erase` | Coincide; sin cambio de dispositivo | `PASS` |
+| HW-FLASH-001 | `write_flash` de 5 regiones (dio/40m/detect) | Todas: «Hash of data verified»; exit `0` | `PASS` |
+| HW-VERIFY-001 | `verify_flash` de readback on-chip por región | 5/5 `verify OK` | `PASS` |
+| HW-BOOT-002 | Reinicio + serial 115200 | Banner de arranque, un solo boot, sin loop; LittleFS montado | `PASS` |
+
+#### Regiones flasheadas (offsets, tamaños, hashes)
+
+| Región | Offset | Tamaño (bytes) | SHA-256 | write verify | readback `verify_flash` |
+| --- | --- | ---: | --- | --- | --- |
+| bootloader | `0x1000` | 17536 | `3d234a7471f67b013686dabd4dee7c1fa915c9928463616a94bc9297acf1abf8` | OK | OK |
+| partition-table | `0x8000` | 3072 | `aaae2888c5a6a348004b5b436f47abb25ae32e72d9003902955a998eda723edd` | OK | OK |
+| boot_app0 (otadata) | `0xe000` | 8192 | `f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0` | OK | OK |
+| application | `0x10000` | 1193616 | `7f088f4775cf8ac9a4ac32045a551cfc2fd7e27655111abd745caec89836e9f9` | OK | OK |
+| littlefs | `0x310000` | 917504 | `811f0ba31a81b59dd950da140cd92365804fe669e335ccbd38561dca8f53d0ff` | OK | OK |
+
+Tabla de particiones flasheada (huge_app): `nvs` `0x9000`/`0x5000`,
+`otadata` `0xe000`/`0x2000`, `app0` `0x10000`/`0x300000`, `spiffs`(LittleFS)
+`0x310000`/`0xe0000`, `coredump` `0x3f0000`/`0x10000`.
+
+#### Confirmación de arranque y LittleFS
+
+- Un único reinicio `POWERON_RESET`, `mode:DIO`; sin boot loop.
+- Banner de firmware: `=== SmallTV v1.1.4-clawd-meter ===` (`FW_VERSION`
+  funcional conservado; no se introdujo versión ficticia).
+- LittleFS montado: el acceso a `/littlefs/config.json` resuelve la ruta
+  (inexistente por dispositivo recién borrado; sin credenciales previas).
+- Los mensajes tempranos «File system is not mounted» / «Font not found» en
+  ~375 ms son de la pantalla de splash previa al montaje (comportamiento
+  preexistente del firmware), no un defecto de flasheo.
+- Contenido del filesystem verificado a partir de la imagen flasheada
+  (idéntica en el dispositivo por `verify_flash`): fuentes `DMMono-11/12/14/16`,
+  `Jersey25-32/44/64/86` y UI web (`index.html`, `css/`, `js/`).
+
+Limitación técnica registrada: el enlace USB-serial (CH340) es ruidoso a
+baudios altos; las lecturas masivas contiguas se corrompen. Se mitigó con
+lecturas por chunks (backup) y con verificación por hash on-chip
+(`write_flash`/`verify_flash`), que no depende de transferir el contenido por
+el enlace.
 
 ## Checklist funcional (umbrales cerrados)
 
