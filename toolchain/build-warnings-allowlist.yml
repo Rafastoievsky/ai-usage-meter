@@ -1,5 +1,3 @@
-# Allowlist versionada de warnings de build (SPEC 01).
-# Cada entrada requiere: pattern (exacto), tool, justification, responsible,
-# review_date. Cualquier warning no listado produce FAIL en el build de
-# aceptación. Se completa durante el Paso 5 con los warnings observados.
-allowlist: []
+# Allowlist de warnings de compilación
+# Cada warning debe tener patrón exacto, herramienta, justificación, responsable y fecha de revisión.
+warnings: []

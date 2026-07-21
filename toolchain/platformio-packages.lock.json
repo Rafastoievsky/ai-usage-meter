@@ -1,6 +1,37 @@
 {
-  "schema_version": 1,
-  "note": "Internal PlatformIO packages used by target `cyd`. Filled with resolved exact versions during SPEC 01 Step 5 after a controlled resolution in an isolated PLATFORMIO_CORE_DIR.",
-  "platformio_core_dir_id": null,
-  "packages": []
+  "tool-scons": {
+    "owner": null,
+    "version": "4.40801.0",
+    "url": null,
+    "checksum": null,
+    "system": null
+  },
+  "tool-mklittlefs": {
+    "owner": null,
+    "version": "1.203.210628",
+    "url": null,
+    "checksum": null,
+    "system": null
+  },
+  "framework-arduinoespressif32": {
+    "owner": null,
+    "version": "3.20017.241212+sha.dcc1105b",
+    "url": null,
+    "checksum": null,
+    "system": null
+  },
+  "tool-esptoolpy": {
+    "owner": null,
+    "version": "2.41100.0",
+    "url": null,
+    "checksum": null,
+    "system": null
+  },
+  "toolchain-xtensa-esp32": {
+    "owner": null,
+    "version": "8.4.0+2021r2-patch5",
+    "url": null,
+    "checksum": null,
+    "system": null
+  }
 }

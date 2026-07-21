@@ -181,3 +181,31 @@ La verificación de detached HEAD sobre el gitlink corresponde al clon de prueba
 | ai-usage-meter | origin | `git@github.com:Rafastoievsky/ai-usage-meter.git` | `git@github.com:Rafastoievsky/ai-usage-meter.git` | `N/A` | `main` (previsto) | tip local `UNPUBLISHED` | `Repository not found` (ACTION_REQUIRED; creación en Step 6) | `N/A` | `N/A` | limpio (tras commit) | preservadas por push autorizado (Step 6): `main`, `spec-00-*`, `spec-01-*` |
 | clawd-meter | origin | `https://github.com/Rafastoievsky/clawd-meter.git` | `git@github.com:Rafastoievsky/clawd-meter.git` | `https://github.com/Rafastoievsky/clawd-meter.git` | `main` (`ls-remote --symref` HEAD→`refs/heads/main`) | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` | OK (HEAD→`main`) | gitlink es ancestro de `origin/main` (`merge-base --is-ancestor` exit 0) | `upstream_only=0`, `origin_only=0` | limpio | 0 (preflight) |
 | clawd-meter | upstream | `https://github.com/monsieurfux/clawd-meter.git` | `NONE` | `N/A` | `main` (`ls-remote --symref` HEAD→`refs/heads/main`) | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` | OK (HEAD→`main`) | `N/A` | `upstream_only=0`, `origin_only=0` (dirección: izquierda=upstream_only, derecha=origin_only) | `N/A` | `N/A` |
+
+### BUILD-A-001
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | BUILD-A-001 |
+| `phase` | `phase-a` |
+| `recorded_at` | 2026-07-20T19:25:00Z |
+| `responsible` | operador local |
+| `coordinator_commit` | tip local `UNPUBLISHED` |
+| `firmware_commit` | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` |
+| `result` | `PASS` |
+| `notes` | Dependencias fijadas, toolchain lock generado. Baseline construido sin hardware con cero warnings no allowlisted. |
+
+#### BuildArtifactRecord (BUILD-A-001)
+
+| target | command | artifact_logical_path | artifact_size_bytes | artifact_sha256 | flash_offset | partition_name | partition_size_bytes | platformio_core_dir_id | platformio_lock_sha256 | warnings_allowlist_sha256 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| bootloader | `pio run -e cyd` | `bootloader.bin` | 17536 | 3d234a7471f67b013686dabd4dee7c1fa915c9928463616a94bc9297acf1abf8 | `N/A` | `N/A` | `N/A` | core aislado 2 | `N/A` | `N/A` |
+| partitions | `pio run -e cyd` | `partitions.bin` | 3072 | aaae2888c5a6a348004b5b436f47abb25ae32e72d9003902955a998eda723edd | `N/A` | `N/A` | `N/A` | core aislado 2 | `N/A` | `N/A` |
+| application | `pio run -e cyd` | `firmware.bin` | 1194688 | f43fe777b60d03aa9c6eb934b4794a6040bec94c8dd04f36c234ac87c2c5a1c4 | `N/A` | app0 | 3145728 | core aislado 2 | `N/A` | `N/A` |
+| littlefs | `pio run -e cyd -t buildfs` | `littlefs.bin` | 917504 | 7fb9b109447e84d051d4c7480062be1fb65a9eea172383bf7531d734b995e43d | `N/A` | spiffs | `N/A` | core aislado 2 | `N/A` | `N/A` |
+
+#### BuildMetricsRecord (BUILD-A-001)
+
+| ram_used_bytes | ram_limit_bytes | program_storage_used_bytes | program_storage_limit_bytes | physical_flash_bytes | partition_table_sha256 | littlefs_partition_offset | littlefs_partition_size | littlefs_image_size | build_identity |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 52504 | 327680 | 1188113 | 3145728 | 4194304 | aaae2888c5a6a348004b5b436f47abb25ae32e72d9003902955a998eda723edd | `N/A` | `N/A` | 917504 | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` |
