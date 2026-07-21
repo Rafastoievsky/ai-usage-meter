@@ -1,0 +1,3 @@
+[submodule "clawd-meter"]
+	path = clawd-meter
+	url = https://github.com/Rafastoievsky/clawd-meter.git

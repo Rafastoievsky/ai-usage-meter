@@ -151,3 +151,33 @@ secretos en datos binarios.
 Los intentos anteriores (inventario inicial) no se sobrescriben. Este bloque
 registra el resultado del escaneo del Step 3; el gate final consolidado se
 registra en Step 11.
+
+### TOPO-A-001
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | TOPO-A-001 |
+| `phase` | `phase-a` |
+| `recorded_at` | 2026-07-21T02:06:14Z |
+| `responsible` | operador local |
+| `coordinator_commit` | tip local `UNPUBLISHED` (avanza con el commit de este paso) |
+| `firmware_commit` | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` |
+| `result` | `PASS` |
+| `notes` | Estado detectado: gitlink existente sin `.gitmodules`. Reparado sin absorber gitdirs, sin perder refs (firmware con 0 refs locales exclusivas). |
+
+**Acciones aplicadas:**
+
+- Coordinador `origin` configurado en SSH (`git@github.com:Rafastoievsky/ai-usage-meter.git`) **sin push** (creación/publicación autorizada en Step 6).
+- `.gitmodules` creado con URL HTTPS pública y **sin `branch`** (fuente de verdad = gitlink).
+- Firmware: `origin.url` HTTPS, `origin.pushurl` SSH, `upstream.url` HTTPS y **sin `remote.upstream.pushurl`** (verificado por `git config`).
+- `git submodule init` registró la URL; índice en modo `160000`; `git submodule status` con prefijo espacio y SHA igual al índice y al HEAD del submódulo (`1f29bf30…`, tag `v1.1.4`).
+
+La verificación de detached HEAD sobre el gitlink corresponde al clon de prueba (Step 6).
+
+#### RepositoryBaseline (TOPO-A-001)
+
+| repository | remote | fetch_url | push_url | submodule_url | default_branch | commit_sha | ls_remote_result | ancestor_result | origin_upstream_diff | worktree_state | local_only_refs |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ai-usage-meter | origin | `git@github.com:Rafastoievsky/ai-usage-meter.git` | `git@github.com:Rafastoievsky/ai-usage-meter.git` | `N/A` | `main` (previsto) | tip local `UNPUBLISHED` | `Repository not found` (ACTION_REQUIRED; creación en Step 6) | `N/A` | `N/A` | limpio (tras commit) | preservadas por push autorizado (Step 6): `main`, `spec-00-*`, `spec-01-*` |
+| clawd-meter | origin | `https://github.com/Rafastoievsky/clawd-meter.git` | `git@github.com:Rafastoievsky/clawd-meter.git` | `https://github.com/Rafastoievsky/clawd-meter.git` | `main` (`ls-remote --symref` HEAD→`refs/heads/main`) | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` | OK (HEAD→`main`) | gitlink es ancestro de `origin/main` (`merge-base --is-ancestor` exit 0) | `upstream_only=0`, `origin_only=0` | limpio | 0 (preflight) |
+| clawd-meter | upstream | `https://github.com/monsieurfux/clawd-meter.git` | `NONE` | `N/A` | `main` (`ls-remote --symref` HEAD→`refs/heads/main`) | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` | OK (HEAD→`main`) | `N/A` | `upstream_only=0`, `origin_only=0` (dirección: izquierda=upstream_only, derecha=origin_only) | `N/A` | `N/A` |
