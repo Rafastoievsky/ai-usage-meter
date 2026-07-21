@@ -38,6 +38,22 @@ Todo registro contiene: `attempt_id`, `phase`, `recorded_at` (UTC RFC 3339),
 Sin CYD verificable la Fase B queda `BLOCKED` y SPEC 01 no puede pasar a
 `Implemented-Verified`.
 
+### Registro de intento — Fase B (paso 7)
+
+Los registros de intentos anteriores no se sobrescriben; este se añade al
+final del historial.
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | `spec-01-phase-b-2026-07-21T03:07:29Z` |
+| `phase` | `phase-b` |
+| `recorded_at` | `2026-07-21T03:07:29Z` |
+| `responsible` | Rafastoievsky |
+| `coordinator_commit` | `08f68b809dce0e078999b94fbb76ebb5267aefcb` |
+| `firmware_commit` | `1594f42ca7573e47ead079d659c1b2c90d8c73ae` |
+| `result` | `BLOCKED` |
+| `notes` | No hay un CYD verificable conectado durante esta ejecución. No se ejecutó ninguna detección serial, identificación con esptool, lectura de flash, backup, borrado ni flashing. `DeviceIdentityRecord` y `BackupRecord` permanecen `PENDING`. Bloqueo limitado a la Fase B; la Fase A (pasos 1–6) permanece válida e íntegra. SPEC 01 no puede pasar a `Implemented-Verified` mientras persista este bloqueo. Retomar con un CYD conectado desde el paso 7. |
+
 ## Checklist funcional (umbrales cerrados)
 
 | id | Prueba | Umbral | status |
