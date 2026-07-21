@@ -102,3 +102,52 @@ menciona la ruta literal `bin/esptool` queda documentado para `/spec-check`.
 | Claude sessionKey | `sessionKey`, `claudeKey` | usuario de la cuenta | almacén gestionado por el proveedor (fuera del ESP32 en V1) | futuro `ClaudeProvider` | SPEC 00 §8.7 | fuente, refs Git, LittleFS, artefactos | pendiente (pasos 3/11) | pendiente | pendiente |
 | `apiToken` | `apiToken` | operador local | LittleFS del dispositivo | superficies autenticadas del firmware | rotación manual | fuente, refs Git, artefactos | pendiente (pasos 3/11) | pendiente | pendiente |
 | Wi-Fi password | credencial de red | propietario de la red | LittleFS del dispositivo | subsistema Wi-Fi | según red | backup crudo (Fase B) | pendiente | pendiente | pendiente |
+
+### SECRETS-A-001
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | SECRETS-A-001 |
+| `phase` | `phase-a` |
+| `recorded_at` | 2026-07-21T02:06:14Z |
+| `responsible` | operador local |
+| `coordinator_commit` | `bcfa5435a0f09f083987d71596d7f48cb5c7355b` |
+| `firmware_commit` | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` |
+| `result` | `PASS` |
+| `notes` | Gate inicial de secretos (Step 3). Escaneo redactado; sin exponer valores ni strings de binarios. |
+
+**Método y alcance (Gitleaks 8.30.1, `--redact`):**
+
+- Historia completa confirmada: ambos repos `git rev-parse --is-shallow-repository = false`; `git fetch --all --tags --prune` sin referencias faltantes.
+- `gitleaks git . --log-opts="--all"` sobre el coordinador (todas las referencias alcanzables).
+- `gitleaks git clawd-meter --log-opts="--all"` sobre el firmware (todas las referencias alcanzables, incluyendo `origin`/`upstream`).
+- `gitleaks dir` sobre árboles de trabajo: `docs/`, `scripts/`, `toolchain/`, `specs/`, `clawd-meter/src`, `clawd-meter/data`.
+- Revisión dirigida de `claudeKey`, `sessionKey`, `apiToken`, Wi-Fi, exports y fixtures: no existen `config.json`, `*.config.json`, `secrets.h`, `.env` ni volcados de export en el árbol; los nombres de campo aparecen solo como identificadores en fuente (0 asignaciones de valor literal).
+- Reportes JSON redactados en un temporal `mktemp -d` con `umask 077`, modo `0700` y borrado por `trap`. No se imprimieron strings de binarios ni de backups.
+
+**Resultado formal:**
+
+> Cero detecciones reales no resueltas dentro de los métodos y alcances documentados.
+
+Este gate cubre referencias Git, árboles de trabajo y fuentes. El contenido
+LittleFS extraído, los strings imprimibles de artefactos y los patrones del
+backup crudo se examinan en Fase B / Step 11. No se afirma ausencia absoluta de
+secretos en datos binarios.
+
+**Política de remediación aplicada:**
+
+- Coordinador: historia aún `UNPUBLISHED` (sin remoto `origin`). Cero hallazgos ⇒ sin reescritura pendiente; de existir, se reescribiría de forma controlada antes del primer push (Step 6).
+- Firmware: `origin` y `upstream` públicos. Cero hallazgos ⇒ sin revocación ni reescritura coordinada requerida.
+- No se encontró credencial activa; el flujo no se detuvo.
+
+#### SecretInventoryEntry (SECRETS-A-001 — gate inicial, Step 3)
+
+| name | aliases | owner | logical_location | consumer | rotation_policy | scan_scope | scan_method | finding_count | resolution |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Claude sessionKey | `sessionKey`, `claudeKey` | usuario de la cuenta | almacén gestionado por el proveedor (fuera del ESP32 en V1) | futuro `ClaudeProvider` | SPEC 00 §8.7 | refs Git (coordinador+firmware, `--all`), árboles, fuentes | Gitleaks 8.30.1 redactado + revisión dirigida | 0 | `N/A` (LittleFS/artefactos/backup en Step 11) |
+| `apiToken` | `apiToken` | operador local | LittleFS del dispositivo (`/config.json`, no versionado) | superficies autenticadas del firmware | rotación manual | refs Git, árboles, fuentes | Gitleaks 8.30.1 redactado + revisión dirigida | 0 | `N/A` (artefactos/backup en Step 11) |
+| Wi-Fi password | credencial de red | propietario de la red | LittleFS del dispositivo (`/config.json`, no versionado) | subsistema Wi-Fi | según red | refs Git, árboles, fuentes | Gitleaks 8.30.1 redactado + revisión dirigida | 0 | `N/A` (backup crudo en Fase B / Step 11) |
+
+Los intentos anteriores (inventario inicial) no se sobrescriben. Este bloque
+registra el resultado del escaneo del Step 3; el gate final consolidado se
+registra en Step 11.
