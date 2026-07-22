@@ -209,3 +209,50 @@ La verificación de detached HEAD sobre el gitlink corresponde al clon de prueba
 | ram_used_bytes | ram_limit_bytes | program_storage_used_bytes | program_storage_limit_bytes | physical_flash_bytes | partition_table_sha256 | littlefs_partition_offset | littlefs_partition_size | littlefs_image_size | build_identity |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 52504 | 327680 | 1188113 | 3145728 | 4194304 | aaae2888c5a6a348004b5b436f47abb25ae32e72d9003902955a998eda723edd | `N/A` | `N/A` | 917504 | `1f29bf30ea9e7d1e09979a5760d47b1e361fdf32` |
+
+### CLOSE-10-001 (Step 10 — cierre coordinado del firmware y sync del gitlink)
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | `spec-01-close-step10-2026-07-22T03:24:21Z` |
+| `phase` | `final` |
+| `recorded_at` | `2026-07-22T03:24:21Z` |
+| `responsible` | Rafastoievsky |
+| `coordinator_commit` | `4dddaec` (gitlink `617e949`) + este commit de Step 10 |
+| `firmware_commit` | `617e949ba77273ceaa6f3c55b564222bfbfabfff` |
+| `result` | `PASS` |
+| `notes` | `platformio.ini` fijado integrado a `main` del firmware vía PR #1 (merge commit, sin squash ni rebase de historia publicada). Gitlink verificado como ancestro de `origin/main`. Clon anónimo HTTPS confirma disponibilidad pública del commit y de los 4 pins. `FW_VERSION` conservado. |
+
+#### RepositoryBaseline (firmware, CLOSE-10-001)
+
+| Campo | Valor |
+| --- | --- |
+| `repository` | `clawd-meter` |
+| `remote` | `origin` |
+| `fetch_url` | `https://github.com/Rafastoievsky/clawd-meter.git` |
+| `push_url` | `git@github.com:Rafastoievsky/clawd-meter.git` |
+| `submodule_url` | `https://github.com/Rafastoievsky/clawd-meter.git` |
+| `default_branch` | `main` |
+| `commit_sha` (gitlink) | `617e949ba77273ceaa6f3c55b564222bfbfabfff` |
+| `origin_main_sha` | `80d9db9b591ba01e908f2f7aa40fd31bc6de1acf` (merge commit PR #1) |
+| `ls_remote_result` | OK (fetch `1f29bf3..80d9db9 main`) |
+| `ancestor_result` | `merge-base --is-ancestor 617e949 origin/main` = `0` (ancestro OK, verificado también en clon anónimo) |
+| `worktree_state` | limpio |
+
+#### build_identity (baseline final del firmware)
+
+| Componente | Valor |
+| --- | --- |
+| `firmware_commit` | `617e949ba77273ceaa6f3c55b564222bfbfabfff` |
+| `FW_VERSION` | `1.1.4-clawd-meter` (conservado; no modificado para SPEC 01) |
+| `requirements-tools.lock` sha256 | `1cd5e816a0b5d3a17a02a6d5a7ab3b3c0b92f51ff12ed4e77d9cface7a80e335` |
+| `toolchain/platformio-packages.lock.json` sha256 | `4d18b799b1d345cd020f1ef49d8d035f7a589ececa6d697e57fbd03b3ffd63df` |
+| artefactos flasheados (paso 8) | bootloader `3d234a74…`, partitions `aaae2888…`, application `7f088f47…`, littlefs `811f0ba3…` |
+| `platformio.ini` pins | `espressif32@7.0.1`, `TFT_eSPI@2.5.43`, `ArduinoJson@7.4.3`, XPT2046 `f956c5d8…` (4/4 verificados en clon anónimo) |
+
+Nota: el `platformio.ini` de `617e949` es idéntico al del commit `1594f42c`
+usado para construir los artefactos flasheados en los pasos 8–9, por lo que el
+baseline funcional verificado en hardware corresponde a este `build_identity`.
+Observación: el gitlink `617e949` quedó registrado en el commit externo
+`4dddaec` ("Add initial PDF…"), mezclado con un `test.pdf` no relacionado con
+SPEC 01; el valor del gitlink es correcto y se preserva.
