@@ -34,12 +34,16 @@ Todo registro contiene: `attempt_id`, `phase`, `recorded_at` (UTC RFC 3339),
 | `DeviceIdentityRecord` | `DONE` — CYD identificado (intento `2026-07-21T21:10:57Z`) |
 | `BackupRecord` | `DONE` — backup 4 MiB verificado (intento `2026-07-21T21:10:57Z`) |
 | Flashing (paso 8) | `DONE` — borrado + 5 regiones verificadas (intento `2026-07-21T22:04:18Z`) |
-| Checklist funcional (paso 9) | `PENDING` — pruebas manuales con umbrales |
+| Checklist funcional (paso 9) | `DONE (con 1 diferido)` — 12 PASS; HW-CLAWD-001 diferido (intento `2026-07-22T00:29:27Z`) |
 
 Sin CYD verificable la Fase B queda `BLOCKED` y SPEC 01 no puede pasar a
-`Implemented-Verified`. El paso 8 (`erase_flash`, escritura, reflasheo) se
-completó y verificó. El paso 9 (checklist funcional con umbrales observables)
-permanece pendiente.
+`Implemented-Verified`. Los pasos 7–9 se ejecutaron con un CYD real. El
+checklist funcional (paso 9) quedó con **12 PASS** y **HW-CLAWD-001 diferido**
+(sin FAIL/BLOCKED): en el baseline degradado sin Claude la carita queda
+`SLEEPY` (estática) por diseño, y el blink/look-around solo animan con datos de
+Claude o expresión manual — su verificación se difiere a un contexto con Claude
+conectado (fuera del alcance de SPEC 01). El cierre a `Implemented-Verified` lo
+evalúa `/spec-check`.
 
 ### Registro de intento — Fase B (paso 7)
 
@@ -206,21 +210,23 @@ el enlace.
 
 ## Checklist funcional (umbrales cerrados)
 
-| id | Prueba | Umbral | status |
-| --- | --- | --- | --- |
-| HW-BOOT-001 | Arranque inicial completo | máx. 60 s | `PENDING` |
-| HW-STAB-001 | Observación continua | 10 min sin boot loop, watchdog ni reinicio | `PENDING` |
-| HW-DISP-001 | Pantalla landscape 320×240, colores, polaridad, backlight | correcto a simple vista | `PENDING` |
-| HW-LFS-001 | LittleFS monta; fuentes y web legibles | lectura correcta | `PENDING` |
-| HW-WIFI-001 | Portal inicial + Wi-Fi temporal sin imprimir contraseña | conexión exitosa | `PENDING` |
-| HW-TOUCH-001 | 10 toques consecutivos | exactamente un avance por toque | `PENDING` |
-| HW-ROT-001 | Rotación automática | ±2 s del intervalo configurado | `PENDING` |
-| HW-NTP-001 | Reloj tras NTP | desviación máx. 60 s; timeout NTP 60 s | `PENDING` |
-| HW-WX-001 | Clima y pronóstico | respuesta en máx. 90 s con conectividad verificada | `PENDING` |
-| HW-CLAWD-001 | Blink y look-around | al menos uno de cada uno en 5 min | `PENDING` |
-| HW-PERS-001 | Persistencia de configuración permitida tras reinicio | valores conservados | `PENDING` |
-| HW-DEG-001 | Arranque sin credenciales Claude; canal Claude sin porcentajes falsos; canales locales operan | comportamiento degradado correcto | `PENDING` |
-| HW-HEAP-001 | Heap al arranque y tras 10 min (por serial si Info no lo muestra) | sin caída sostenida | `PENDING` |
+| id | Prueba | Umbral | Observado | status |
+| --- | --- | --- | --- | --- |
+| HW-BOOT-001 | Arranque inicial completo | máx. 60 s | ~5 s a pantalla útil (serial: banner a 1.0 s) | `PASS` |
+| HW-STAB-001 | Observación continua | 10 min sin boot loop, watchdog ni reinicio | Uptime 6m→18m (+12 min), sin volver a 0; sin reinicios | `PASS` |
+| HW-DISP-001 | Pantalla landscape 320×240, colores, polaridad, backlight | correcto a simple vista | Landscape, colores (azul/blanco/negro), backlight OK | `PASS` |
+| HW-LFS-001 | LittleFS monta; fuentes y web legibles | lectura correcta | Montado; canales con fuentes; contenido verificado por `verify_flash` | `PASS` |
+| HW-WIFI-001 | Portal inicial + Wi-Fi temporal sin imprimir contraseña | conexión exitosa | Portal OK; Wi-Fi ingresado sin mostrar contraseña en pantalla | `PASS` |
+| HW-TOUCH-001 | 10 toques consecutivos | exactamente un avance por toque | 10/10, un avance por toque | `PASS` |
+| HW-ROT-001 | Rotación automática | ±2 s del intervalo configurado | Rota cada 8 s (intervalo configurado 8 s) | `PASS` |
+| HW-NTP-001 | Reloj tras NTP | desviación máx. 60 s; timeout NTP 60 s | NTP sincronizó; minutos coincidían; tras fijar UTC-07:00, hora local correcta | `PASS` |
+| HW-WX-001 | Clima y pronóstico | respuesta en máx. 90 s con conectividad verificada | Clima/Forecast cargaron con coordenadas de prueba | `PASS` |
+| HW-CLAWD-001 | Blink y look-around | al menos uno de cada uno en 5 min | No observado; carita `SLEEPY` (estática) sin Claude por diseño | `DEFERRED` |
+| HW-PERS-001 | Persistencia de configuración permitida tras reinicio | valores conservados | Brillo cambiado→guardado→reinicio USB→conservado; `config.json` persistió | `PASS` |
+| HW-DEG-001 | Arranque sin credenciales Claude; canal Claude sin porcentajes falsos; canales locales operan | comportamiento degradado correcto | Sin `claudeKey`; canal Claude oculto (sin % falsos); Info/Clawd/Reloj/Clima operan | `PASS` |
+| HW-HEAP-001 | Heap al arranque y tras 10 min (por serial si Info no lo muestra) | sin caída sostenida | Info «Memory»: 216K→212K→216K; sin caída sostenida | `PASS` |
+
+Resumen paso 9: **12 PASS**, **1 DEFERRED** (HW-CLAWD-001), sin FAIL/BLOCKED.
 
 Condiciones de red: red temporal o de invitados con aislamiento entre
 clientes; prohibida la LAN productiva. Solo configuración nueva permitida;
@@ -228,3 +234,50 @@ no se configura `claudeKey`, `sessionKey` ni `apiToken`.
 
 Deuda registrada: `/api/export` y `claudeKey` heredados se documentan como
 deuda de SPEC 09–10; no se corrigen en SPEC 01.
+
+### Registro de intento — Fase B (paso 9, checklist funcional)
+
+Se añade al historial; no sobrescribe intentos anteriores.
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | `spec-01-phase-b-2026-07-22T00:29:27Z` |
+| `phase` | `phase-b` |
+| `recorded_at` | `2026-07-22T00:29:27Z` |
+| `responsible` | Rafastoievsky |
+| `coordinator_commit` | `35ec20dc284062c77ba12709c4628c87ca3e03c2` |
+| `firmware_commit` | `1594f42ca7573e47ead079d659c1b2c90d8c73ae` |
+| `result` | `PASS (con HW-CLAWD-001 DEFERRED; sin FAIL/BLOCKED)` |
+| `network_profile` | `hotspot-movil-temporal` (red temporal aislada de la LAN productiva) |
+| `platformio_version` | `6.1.19` |
+| `notes` | Ejecución guiada con CYD real. 12/13 pruebas PASS; HW-CLAWD-001 diferido (ver observación). Solo configuración permitida (Wi-Fi temporal, zona horaria, coordenadas de prueba, brillo, canales, rotación); no se configuró `claudeKey`/`sessionKey`/`apiToken`. Medición por pantalla (Info: Uptime/Memory/IP) + serial USB para arranque/estabilidad; el HTTP directo no fue posible por aislamiento de clientes de la red temporal. |
+
+#### Observaciones y remediaciones del paso 9
+
+1. **Red productiva evitada (remediado).** En un arranque inicial el dispositivo
+   se autoconectó a un Wi-Fi guardado que resultó ser la **LAN productiva** del
+   usuario (prohibido por el spec). Se remedió **reflasheando la imagen LittleFS
+   limpia** (`0x310000`, sin `config.json`, `verify OK`), borrando la credencial
+   Wi-Fi, y reconectando a un **hotspot móvil** como red temporal aislada. SSID
+   redactado; no se registran credenciales.
+2. **Zona horaria vía menú `tzMinutes`.** El portal expone la zona horaria como
+   un desplegable ligado a `tzMinutes` (no `tzOffset`). Para America/Hermosillo
+   (UTC-7, sin DST) se selecciona `UTC-07:00` (`tzMinutes = -420`). NTP ya era
+   correcto; el desfase inicial era solo de presentación (zona horaria).
+3. **HW-CLAWD-001 diferido (hallazgo spec↔firmware).** Sin datos de Claude,
+   `sessionPct = -1` → `resolveExpr` devuelve `EX_SLEEPY`, que **no** está en
+   `isAnimated()`; la carita queda estática (ni blink ni look-around). El
+   blink/look-around solo animan en `EX_NORMAL`/`EX_STRESSED` (uso 40–60 %+), es
+   decir con Claude conectado o forzando `clawdMode=manual`/`clawdExpr=normal`.
+   El intento manual no se observó de forma concluyente (con Auto-rotate, el
+   temporizador de blink de 7.5 s se reinicia en cada activación de canal). El
+   usuario decidió diferir la verificación del blink/look-around a un contexto
+   con Claude conectado (fuera del alcance de SPEC 01). Se registra como
+   observación, no como PASS ni FAIL.
+4. **Escritura del paso 9.** El reflasheo de LittleFS del punto 1 es la única
+   escritura del paso 9; usa el mismo artefacto ya verificado en el paso 8 y no
+   altera el baseline. Identidad revalidada antes de escribir.
+
+Deuda confirmada en dispositivo: el canal Claude permanece oculto sin
+`claudeKey` (sin porcentajes falsos); `/api/export` y el almacenamiento heredado
+de `claudeKey` se documentan como deuda de SPEC 09–10.
