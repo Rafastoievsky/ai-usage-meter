@@ -294,3 +294,83 @@ se consideraría eliminado (no aplica: no hubo hallazgos).
 - Retención del backup: `retention_until = 2026-08-20`, `destruction_status =
   PENDING`, propósito forense; destrucción a registrar al vencer la retención.
 - Deuda SPEC 09–10: `/api/export` y almacenamiento heredado de `claudeKey`.
+
+### FINAL-12-001 (Step 12 — validación del estado final desde cero)
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | `spec-01-final-step12-2026-07-22T03:46:58Z` |
+| `phase` | `final` |
+| `recorded_at` | `2026-07-22T03:46:58Z` |
+| `responsible` | Rafastoievsky |
+| `coordinator_commit` | `e972ec42107de5e12b6594e8fd86a1bb44cf6136` (validado desde clon anónimo de `origin/main`; este registro se versiona en el commit de Step 12) |
+| `firmware_commit` | `617e949ba77273ceaa6f3c55b564222bfbfabfff` |
+| `result` | `PASS` |
+| `notes` | Estado final validado desde un directorio temporal vacío con caches de pip, uv y PlatformIO aislados. Clon anónimo HTTPS con `--recurse-submodules` exit 0. Bootstrap fijado OK. Ambos builds exit 0 con cero warnings (allowlist vacía). |
+
+#### Topología verificada en el clon anónimo
+
+| Verificación | Resultado |
+| --- | --- |
+| `origin` del clon | `https://github.com/Rafastoievsky/ai-usage-meter.git` (anónimo, sin SSH) |
+| `.gitmodules` | URL HTTPS pública, sin clave `branch` |
+| gitlink | modo `160000`, SHA `617e949…` (40 hex) |
+| `git submodule status` | prefijo espacio; HEAD del submódulo = gitlink (detached) |
+| ancestro | `merge-base --is-ancestor 617e949 origin/main` exit 0 (submódulo) |
+| worktrees | coordinador y submódulo limpios antes y después de los builds |
+
+#### Toolchain verificado (rutas controladas del clon)
+
+Python `3.14.6`, pip `26.1.2`, PlatformIO `6.1.19`, esptool `4.11.0`
+(binario `esptool.py`, desviación ya documentada en BOOT-A-001), Gitleaks
+`8.30.1`. Observación: uv emitió un aviso no fatal porque
+`~/.local/bin/python3.14` ya existía en el host; uv usó CPython 3.14.6 igualmente
+y el aviso no pertenece a la compilación.
+
+#### Paquetes resueltos vs `toolchain/platformio-packages.lock.json`
+
+`pio pkg list -e cyd` resolvió exactamente: `framework-arduinoespressif32
+3.20017.241212+sha.dcc1105b`, `tool-esptoolpy 2.41100.0`, `tool-mklittlefs
+1.203.210628`, `toolchain-xtensa-esp32 8.4.0+2021r2-patch5`, `tool-scons
+4.40801.0`; librerías `TFT_eSPI 2.5.43`, `ArduinoJson 7.4.3`, XPT2046
+`f956c5d8…`. Cero versiones distintas del lock.
+
+#### BuildArtifactRecord (FINAL-12-001, core dir aislado y vacío)
+
+| target | command | artifact_logical_path | artifact_size_bytes | artifact_sha256 | flash_offset | partition_name | partition_size_bytes | platformio_core_dir_id | platformio_lock_sha256 | warnings_allowlist_sha256 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| bootloader | `pio run -e cyd` | `bootloader.bin` | 17536 | 3d234a7471f67b013686dabd4dee7c1fa915c9928463616a94bc9297acf1abf8 | `N/A` | `N/A` | `N/A` | core aislado step-12 | 4d18b799b1d345cd020f1ef49d8d035f7a589ececa6d697e57fbd03b3ffd63df | 30bd9284e29f68ea79d83a3f84c395d8d6b4acf341645b918e32ab988316a568 |
+| partitions | `pio run -e cyd` | `partitions.bin` | 3072 | aaae2888c5a6a348004b5b436f47abb25ae32e72d9003902955a998eda723edd | `N/A` | `N/A` | `N/A` | core aislado step-12 | 4d18b799b1d345cd020f1ef49d8d035f7a589ececa6d697e57fbd03b3ffd63df | 30bd9284e29f68ea79d83a3f84c395d8d6b4acf341645b918e32ab988316a568 |
+| application | `pio run -e cyd` | `firmware.bin` | 1193808 | a9c128c6813e814170af058d65d649761227c669ac05bb6df18dbcc81cfc6a99 | `N/A` | app0 | 3145728 | core aislado step-12 | 4d18b799b1d345cd020f1ef49d8d035f7a589ececa6d697e57fbd03b3ffd63df | 30bd9284e29f68ea79d83a3f84c395d8d6b4acf341645b918e32ab988316a568 |
+| littlefs | `pio run -e cyd -t buildfs` | `littlefs.bin` | 917504 | 50a2c6b50ec3079c9f43dee9b5d61948db2504304d31fc87e82ad4e39585760a | `N/A` | spiffs | `N/A` | core aislado step-12 | 4d18b799b1d345cd020f1ef49d8d035f7a589ececa6d697e57fbd03b3ffd63df | 30bd9284e29f68ea79d83a3f84c395d8d6b4acf341645b918e32ab988316a568 |
+
+#### BuildMetricsRecord (FINAL-12-001)
+
+| ram_used_bytes | ram_limit_bytes | program_storage_used_bytes | program_storage_limit_bytes | physical_flash_bytes | partition_table_sha256 | littlefs_partition_offset | littlefs_partition_size | littlefs_image_size | build_identity |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 52504 | 327680 | 1187225 | 3145728 | 4194304 | aaae2888c5a6a348004b5b436f47abb25ae32e72d9003902955a998eda723edd | `N/A` | `N/A` | 917504 | `617e949ba77273ceaa6f3c55b564222bfbfabfff` |
+
+#### Comparación con el baseline y explicación de diferencias
+
+- `bootloader.bin` y `partitions.bin`: hashes **idénticos** a BUILD-A-001 y a los
+  artefactos flasheados en los pasos 8–9.
+- `firmware.bin`: hash distinto al flasheado (`7f088f47…`). SPEC 01 no exige
+  igualdad binaria bit a bit; la diferencia se explica por metadatos de build no
+  deterministas (ruta de compilación distinta: clon temporal vs workspace de
+  mantenimiento). Fuentes, commit, `platformio.ini`, paquetes y librerías son
+  idénticos; RAM usada idéntica (52504 bytes).
+- `littlefs.bin`: hash distinto al flasheado (`811f0ba3…`) con el mismo tamaño
+  (917504 bytes); misma causa: metadatos no deterministas del empaquetado en un
+  entorno de build distinto. Contenido fuente de `data/` idéntico (mismo commit).
+- `program_storage_used_bytes` difiere de BUILD-A-001 (1187225 vs 1188113) porque
+  BUILD-A-001 se construyó sobre `1f29bf30`, anterior al `platformio.ini` fijado;
+  la identidad vigente deriva de `617e949`.
+- Locks: `requirements-tools.lock` sha256 `1cd5e816…` y
+  `platformio-packages.lock.json` sha256 `4d18b799…` coinciden con CLOSE-10-001.
+
+#### Backup y temporales
+
+`git ls-files` y `git rev-list --objects --all` del clon: sin backups, sin
+`*.bin` de backup, sin `config.json`, `secrets.h` ni `.env` en árbol ni historia.
+Retención del backup sin cambios: `retention_until = 2026-08-20`,
+`destruction_status = PENDING`.
