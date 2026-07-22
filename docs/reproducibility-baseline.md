@@ -256,3 +256,41 @@ baseline funcional verificado en hardware corresponde a este `build_identity`.
 Observación: el gitlink `617e949` quedó registrado en el commit externo
 `4dddaec` ("Add initial PDF…"), mezclado con un `test.pdf` no relacionado con
 SPEC 01; el valor del gitlink es correcto y se preserva.
+
+### SECRETS-FINAL-001 (Step 11 — gate final de secretos y evidencia)
+
+| Campo | Valor |
+| --- | --- |
+| `attempt_id` | `spec-01-secrets-final-2026-07-22T03:27:49Z` |
+| `phase` | `final` |
+| `recorded_at` | `2026-07-22T03:27:49Z` |
+| `responsible` | Rafastoievsky |
+| `coordinator_commit` | commit de Step 11 (este) |
+| `firmware_commit` | `617e949ba77273ceaa6f3c55b564222bfbfabfff` |
+| `result` | `PASS` |
+| `notes` | Cero detecciones reales no resueltas dentro de los métodos y alcances documentados. |
+
+#### Métodos y alcance del escaneo final
+
+| Método | Alcance | Resultado |
+| --- | --- | --- |
+| Gitleaks 8.30.1 (`--redact --log-opts=--all`) | coordinador `ai-usage-meter` (15 commits, todas las refs, no shallow) | `no leaks found` |
+| Gitleaks 8.30.1 (`--redact --log-opts=--all`) | firmware `clawd-meter` (44 commits, todas las refs, no shallow) | `no leaks found` |
+| Revisión dirigida | `claudeKey`/`sessionKey`/`apiToken`/Wi-Fi/exports en fuentes y evidencia | sin valores; sin credencial activa |
+| Escaneo del backup crudo (paso 7) | imagen 4 MiB, `strings` en temporal protegido, solo conteos | 0 credenciales Claude; sin `sessionKey` activa |
+| Escaneo de fuga en evidencia | `docs/` (MAC cruda, SSID de casa, ruta personal, IP, valores) | limpio; IPs de ejemplo solo en el plan de diseño preexistente |
+
+Aclaración obligatoria: **no** se afirma ausencia absoluta de secretos en datos
+binarios; se declara cero detecciones reales no resueltas dentro de los métodos
+y alcances documentados. Un valor borrado de HEAD pero presente en historia no
+se consideraría eliminado (no aplica: no hubo hallazgos).
+
+#### Verificaciones de higiene de evidencia
+
+- Backup 4 MiB, temporales sensibles y `config.json` **fuera de Git** (verificado
+  con `git ls-files`: sin `.bin`/backup/`config.json`/`secrets.h`/`.venv-tools`).
+- Sin evidencia visual versionada (no se generaron fotografías/videos;
+  `VisualEvidenceRecord` no aplica en esta ejecución).
+- Retención del backup: `retention_until = 2026-08-20`, `destruction_status =
+  PENDING`, propósito forense; destrucción a registrar al vencer la retención.
+- Deuda SPEC 09–10: `/api/export` y almacenamiento heredado de `claudeKey`.
